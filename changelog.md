@@ -1,5 +1,22 @@
 # Space Ahead ✨ Changelog
 
+## v0.14.0 (Latest) - May 28, 2026
+
+Dependency refresh for the current Astro stack.
+
+### Updates
+
+- Updated Astro to v6.3.8, Astro sitemap to v3.7.3, and Preact to v10.29.2.
+
+## v0.13.0 - May 15, 2026
+
+Astro v6.3 upgrade and dependency refresh.
+
+### Updates
+
+- Upgraded Astro to v6.3.3 and refreshed the theme dependencies.
+- Switched Astro SVG handling to `svgoOptimizer()` in `astro.config.mjs`.
+
 ## v0.12.0 (Latest) - Mar 11, 2026
 
 We've upgraded to Astro v6! 🥳
