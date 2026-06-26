@@ -11,11 +11,13 @@ type LayoutProps = {
   pageTitle: string;
   activePage: string;
   showSubscribeForm?: boolean;
+  wide?: boolean;
 };
 const {
   pageTitle,
   activePage,
   showSubscribeForm = true,
+  wide = false,
 } = Astro.props as LayoutProps;
 ---
 
@@ -42,7 +44,7 @@ const {
     <title>{pageTitle}</title>
   </head>
   <body>
-    <main class="max-w-3xl mx-auto min-h-screen">
+    <main class={`${wide ? "max-w-6xl" : "max-w-3xl"} mx-auto min-h-screen px-4`}>
       <Nav activePage={activePage} />
       <slot />
       {showSubscribeForm && <Subscribe class="my-12 w-full" />}

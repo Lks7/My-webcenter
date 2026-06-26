@@ -7,7 +7,7 @@ const blogsCollection = defineCollection({
     schema: ({ image }) => z.object({
         title: z.string(),
         description: z.string(),
-        pubDate: z.date(),
+        pubDate: z.coerce.date(),
         author: z.string().optional(),
         tags: z.array(z.string()).optional(),
         draft: z.boolean().optional(),
@@ -19,6 +19,22 @@ const blogsCollection = defineCollection({
     }),
 });
 
+const servicesCollection = defineCollection({
+    loader: glob({ pattern: "**/!(README).{md,mdx}", base: "./src/content/services" }),
+    schema: z.object({
+        name: z.string(),
+        description: z.string(),
+        url: z.string().url(),
+        icon: z.string().default("globe"),
+        category: z.enum(["productivity", "tools", "social", "dev", "media", "other"]).default("other"),
+        status: z.enum(["active", "maintenance", "offline"]).default("active"),
+        featured: z.boolean().default(false),
+        tags: z.array(z.string()).optional(),
+        order: z.number().default(99),
+    }),
+});
+
 export const collections = {
     blogs: blogsCollection,
+    services: servicesCollection,
 };

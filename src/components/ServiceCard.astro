@@ -1,0 +1,153 @@
+---
+// ServiceCard.astro — 服务卡片组件
+// 每个服务展示为一张可点击的卡片，跳转到外链
+
+export interface Props {
+  name: string;
+  description: string;
+  url: string;
+  icon?: string;
+  category?: string;
+  status?: "active" | "maintenance" | "offline";
+  featured?: boolean;
+  tags?: string[];
+  showStatusIndicator?: boolean;
+}
+
+const {
+  name,
+  description,
+  url,
+  icon = "globe",
+  category = "other",
+  status = "active",
+  featured = false,
+  tags = [],
+  showStatusIndicator = true,
+} = Astro.props;
+
+// 状态样式映射
+const statusStyles = {
+  active: { dot: "bg-green-400", label: "运行中" },
+  maintenance: { dot: "bg-yellow-400", label: "维护中" },
+  offline: { dot: "bg-red-400", label: "已下线" },
+};
+
+// 分类标签映射
+const categoryLabels: Record<string, string> = {
+  productivity: "生产力",
+  tools: "工具",
+  social: "社交",
+  dev: "开发",
+  media: "媒体",
+  other: "其他",
+};
+
+// SVG 图标映射（内联 SVG，无需外部图标库）
+const icons: Record<string, string> = {
+  globe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  database: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`,
+  code: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  book: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+  tool: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+  fire: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  monitor: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  cloud: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
+  message: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  link: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+};
+
+const iconSvg = icons[icon] ?? icons["globe"];
+const currentStatus = statusStyles[status] ?? statusStyles["active"];
+const categoryLabel = categoryLabels[category] ?? "其他";
+---
+
+<a
+  href={url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class={`service-card group relative flex flex-col gap-3 p-5 rounded-xl border transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
+    featured ? "service-card--featured" : ""
+  } ${status === "offline" ? "opacity-60 cursor-not-allowed" : ""}`}
+  aria-label={`访问 ${name} 服务`}
+  onclick={status === "offline" ? "return false;" : ""}
+>
+  <!-- 顶部：图标 + 状态 + 分类 -->
+  <div class="flex items-start justify-between gap-2">
+    <div class="service-icon w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg p-2">
+      <Fragment set:html={iconSvg} />
+    </div>
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+      {
+        showStatusIndicator && (
+          <span class="flex items-center gap-1 text-xs opacity-70">
+            <span class={`w-1.5 h-1.5 rounded-full ${currentStatus.dot} animate-pulse`} />
+            {currentStatus.label}
+          </span>
+        )
+      }
+      <span class="service-category text-xs px-2 py-0.5 rounded-full">
+        {categoryLabel}
+      </span>
+    </div>
+  </div>
+
+  <!-- 服务名称 -->
+  <div>
+    <h3 class="service-name font-semibold text-base leading-snug group-hover:underline">
+      {name}
+      {featured && <span class="ml-1 text-xs align-middle opacity-60">⭐</span>}
+    </h3>
+    <p class="service-desc text-sm leading-relaxed mt-1 opacity-75 line-clamp-2">
+      {description}
+    </p>
+  </div>
+
+  <!-- 底部标签 -->
+  {
+    tags && tags.length > 0 && (
+      <div class="flex flex-wrap gap-1 mt-auto pt-1">
+        {tags.slice(0, 3).map((tag) => (
+          <span class="service-tag text-xs px-1.5 py-0.5 rounded">#{tag}</span>
+        ))}
+      </div>
+    )
+  }
+
+  <!-- 右上角跳转箭头 -->
+  <span class="service-arrow absolute top-4 right-4 opacity-0 group-hover:opacity-60 transition-opacity text-sm" aria-hidden="true">
+    ↗
+  </span>
+</a>
+
+<style>
+  .service-card {
+    background: color-mix(in srgb, var(--color-bg, white) 95%, transparent);
+    border-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .service-card:hover {
+    border-color: color-mix(in srgb, currentColor 25%, transparent);
+    background: color-mix(in srgb, var(--color-bg, white) 98%, transparent);
+  }
+  .service-card--featured {
+    border-color: color-mix(in srgb, var(--color-accent, #7c3aed) 30%, transparent);
+  }
+  .service-icon {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    color: var(--color-accent, #7c3aed);
+  }
+  .service-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+  .service-category {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+  .service-tag {
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    opacity: 0.7;
+  }
+  .service-arrow {
+    font-size: 1.1rem;
+  }
+</style>

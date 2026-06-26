@@ -28,6 +28,13 @@ export type Blog = {
     description?: string;
 };
 
+export type Services = {
+    title?: string;
+    description?: string;
+    showStatusIndicator?: boolean;
+    password?: string;  // 留空则无需密码，设置后首页服务区需要密码才可见
+};
+
 export type ContactInfo = {
     title?: string;
     text?: string;
@@ -62,128 +69,127 @@ export type SiteConfig = {
     contactInfo?: ContactInfo;
     subscribe?: Subscribe;
     blog?: Blog;
+    services?: Services;
     postsPerPage?: number;
     recentPostLimit: number;
     projectsPerPage?: number;
 };
 
 const siteConfig: SiteConfig = {
-    website: 'https://example.com',
-    title: 'Space Ahead',
-    description: 'A minimal space-inspired personal blog template built with Astro.js and Tailwind CSS, by Siddhesh Thadeshwar',
+    website: 'https://example.com',  // TODO: 替换为你的域名
+    title: '个人主页',
+    description: '个人网站中心 — 博客、工具与服务的聚合门户',
     image: {
         src: '/space-ahead-preview.jpeg',
-        alt: 'Space Ahead ✨ - A minimal space-inspired personal blog template, created by Siddhesh Thadeshwar.'
+        alt: '个人主页预览'
     },
     headerNavLinks: [
         {
-            text: 'Home',
+            text: '首页',
             href: withBase('/')
         },
         {
-            text: 'Blog',
+            text: '博客',
             href: withBase('/blog')
         },
         {
-            text: 'Tags',
+            text: '服务中心',
+            href: withBase('/services')
+        },
+        {
+            text: '标签',
             href: withBase('/tags')
         },
         {
-            text: 'About',
+            text: '关于',
             href: withBase('/about')
         },
         {
-            text: 'Contact',
+            text: '联系',
             href: withBase('/contact')
         }
     ],
     footerNavLinks: [
         {
-            text: 'About',
+            text: '关于',
             href: withBase('/about')
         },
         {
-            text: 'Contact',
+            text: '服务中心',
+            href: withBase('/services')
+        },
+        {
+            text: '联系',
             href: withBase('/contact')
         },
         {
-            text: 'RSS Feed',
+            text: 'RSS',
             href: withBase('/rss.xml')
         },
-                {
+        {
             text: 'Sitemap',
             href: withBase('/sitemap-index.xml')
         }
     ],
     socialLinks: [
         {
-            text: 'Dribbble',
-            href: 'https://dribbble.com/'
-        },
-        {
-            text: 'Instagram',
-            href: 'https://instagram.com/'
-        },
-        {
-            text: 'X/Twitter',
-            href: 'https://twitter.com/'
+            text: 'GitHub',
+            href: 'https://github.com/'  // TODO: 替换为你的 GitHub
         }
     ],
     hero: {
-        eyebrowText: 'Galaxy of Adventures',
-        title: 'Space Ahead ✨',
-        text: "Written by Astro-naut Sid, a space explorer at Beyond Earth.",
+        eyebrowText: '个人网站中心',
+        title: '你好，世界 👋',
+        text: "这是我的个人主页，汇聚了博客文章、自部署服务与个人项目。欢迎探索！",
         image: {
             src: '/assets/images/pixeltrue-space-discovery.svg',
-            alt: 'A person sitting at a desk in front of a computer'
+            alt: '宇航员在宇宙中探索'
         },
         actions: [
             {
-                text: 'Read Now',
+                text: '阅读博客',
                 href: withBase('/blog')
             },
             {
-                text: 'Subscribe',
-                href: '#subscribe'
+                text: '服务中心',
+                href: withBase('/services')
             }
         ]
     },
     about: {
-        title: 'About',
-        text: 'Space Ahead is a blog about space exploration and travel. It is written by Astro-naut Sid, a space explorer at Beyond Earth. Sid is known for his love of adventure and his insatiable curiosity about the universe. He has explored countless planets, discovered new life forms, and made friends with aliens along the way. 🚀',
+        title: '关于我',
+        text: '欢迎来到我的个人主页。这里是我记录想法、分享经验、聚合自部署服务的地方。',
+    },
+    services: {
+        title: '服务中心',
+        description: '我自部署的工具与服务集合，点击卡片即可跳转访问。',
+        showStatusIndicator: true,
+        password: '0481',  // TODO: 修改为你的密码，留空则不需要密码
     },
     contactInfo: {
-        title: 'Contact',
-        text: "Hi! Whether you have a question, a suggestion, or just want to share your thoughts, I'm all ears. Feel free to get in touch through any of the methods below:",
+        title: '联系我',
+        text: "有任何问题或想法，欢迎通过以下方式联系我：",
         email: {
-            text: "Drop me an email and I’ll do my best to respond as soon as possible.",
-            href: "mailto:example@example.com",
+            text: "发送邮件，我会尽快回复。",
+            href: "mailto:example@example.com",  // TODO: 替换为你的邮箱
             email: "example@example.com"
         },
         socialProfiles: [
             {
-                text: "LinkedIn",
-                href: "https://www.linkedin.com/"
-            },
-            {
-                text: "Peerlist",
-                href: "https://www.peerlist.io/"
-            },
-            {
                 text: "GitHub",
-                href: "https://github.com/"
+                href: "https://github.com/"  // TODO: 替换为你的 GitHub
             }
         ]
     },
     subscribe: {
-        title: 'Subscribe to Space Ahead',
-        text: 'One update per week. All the latest stories in your inbox.',
+        title: '订阅更新',
+        text: '获取最新文章和服务动态。',
         formUrl: '#'
     },
     blog: {
-        description: "Read about my space adventures, explorations and the aliens I've met on my journeys."
+        description: "记录技术探索、项目心得与生活感悟。"
     },
-    postsPerPage: 2,
+    postsPerPage: 6,
     recentPostLimit: 3
 };
 

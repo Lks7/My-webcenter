@@ -1,0 +1,281 @@
+---
+import { getCollection } from "astro:content";
+import MainLayout from "../../layouts/MainLayout.astro";
+import siteConfig from "../../site.config";
+import ServiceCard from "../../components/ServiceCard.astro";
+import { createHash } from "node:crypto";
+
+// 获取所有服务并按 order 排序
+const allServices = (await getCollection("services")).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
+);
+
+// 按分类分组
+const categories = [
+  { key: "productivity", label: "生产力", emoji: "⚡" },
+  { key: "tools", label: "工具", emoji: "🛠️" },
+  { key: "dev", label: "开发", emoji: "💻" },
+  { key: "media", label: "媒体", emoji: "🎬" },
+  { key: "social", label: "社交", emoji: "💬" },
+  { key: "other", label: "其他", emoji: "📦" },
+];
+
+// 仅展示有非精选服务的分类（精选已单独展示）
+const activeCategories = categories.filter((cat) =>
+  allServices.some((s) => s.data.category === cat.key && !s.data.featured)
+);
+
+// 置顶的精选服务（featured: true）
+const featuredServices = allServices.filter((s) => s.data.featured);
+
+const pageTitle = `${siteConfig.services?.title ?? "服务中心"} | ${siteConfig.title}`;
+const pageDesc = siteConfig.services?.description ?? "自部署的工具与服务集合";
+const showStatus = siteConfig.services?.showStatusIndicator ?? true;
+
+// 密码保护
+const rawPassword = siteConfig.services?.password ?? "";
+const passwordHash = rawPassword
+  ? createHash("sha256").update(rawPassword).digest("hex")
+  : "";
+const hasPasswordProtection = passwordHash !== "";
+---
+
+<MainLayout activePage="services" pageTitle={pageTitle} showSubscribeForm={false}>
+  <div class="page-content">
+    <!-- 页面头部 -->
+    <div class="services-header mb-10">
+      <h1 class="sigmar-ff text-balance">
+        {siteConfig.services?.title ?? "服务中心"}
+      </h1>
+      <p class="kanit-regular text-sm sm:text-base opacity-75 mt-2">
+        {pageDesc}
+      </p>
+    </div>
+
+    <!-- ── 密码门 ── -->
+    {hasPasswordProtection && (
+      <div id="password-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;">
+        <div style="width:100%;max-width:400px;border-radius:1.25rem;border:1px dashed rgba(128,128,128,0.3);padding:3rem 2rem;background:rgba(128,128,128,0.04);text-align:center;">
+          <div style="font-size:3rem;line-height:1;margin-bottom:1rem;">🔐</div>
+          <h2 style="font-size:1.25rem;font-weight:700;margin:0 0 0.5rem;">需要密码访问</h2>
+          <p style="font-size:0.875rem;opacity:0.6;margin:0 0 1.5rem;">请输入密码以查看服务中心内容</p>
+          <div style="display:flex;border-radius:0.625rem;overflow:hidden;border:1.5px solid rgba(128,128,128,0.25);background:rgba(128,128,128,0.05);" id="gate-input-wrap">
+            <input
+              id="password-input"
+              type="password"
+              placeholder="输入访问密码"
+              autocomplete="current-password"
+              maxlength="64"
+              aria-label="服务中心访问密码"
+              style="flex:1;padding:0.65rem 0.875rem;background:transparent;border:none;outline:none;font-size:0.9rem;color:inherit;min-width:0;"
+            />
+            <button
+              id="password-submit"
+              type="button"
+              style="padding:0.5rem 1.25rem;font-size:0.85rem;font-weight:600;background:rgba(128,128,128,0.15);border:none;border-left:1px solid rgba(128,128,128,0.2);cursor:pointer;color:inherit;transition:background 0.15s;white-space:nowrap;"
+              onmouseover="if(!this.disabled)this.style.background='rgba(128,128,128,0.28)'"
+              onmouseout="if(!this.disabled)this.style.background='rgba(128,128,128,0.15)'"
+            >
+              解锁
+            </button>
+          </div>
+          <p id="password-error" role="alert" aria-live="polite" style="margin-top:0.5rem;font-size:0.8rem;color:#ef4444;min-height:1.2em;text-align:left;"></p>
+          <p style="font-size:0.72rem;opacity:0.35;margin-top:1rem;">本次访问期间无需重新输入</p>
+        </div>
+      </div>
+    )}
+
+    <!-- ── 服务内容（有密码时初始隐藏） ── -->
+    <div id="services-content" style={hasPasswordProtection ? "display:none;" : ""}>
+      {allServices.length === 0 ? (
+        <div class="empty-state text-center py-20 opacity-50">
+          <div class="text-5xl mb-4">🚀</div>
+          <p class="text-lg font-medium">暂无服务</p>
+          <p class="text-sm mt-2">
+            在 <code>src/content/services/</code> 目录下添加 .md 文件来注册服务。
+          </p>
+        </div>
+      ) : (
+        <div>
+          <!-- 精选服务区块 -->
+          {featuredServices.length > 0 && (
+            <section class="services-section mb-10">
+              <h2 class="services-section-title">
+                <span>⭐</span> 精选服务
+              </h2>
+              <div class="services-grid">
+                {featuredServices.map((service) => (
+                  <ServiceCard
+                    name={service.data.name}
+                    description={service.data.description}
+                    url={service.data.url}
+                    icon={service.data.icon}
+                    category={service.data.category}
+                    status={service.data.status}
+                    featured={service.data.featured}
+                    tags={service.data.tags}
+                    showStatusIndicator={showStatus}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <!-- 分类服务区块 -->
+          {activeCategories.map((cat) => {
+            const catServices = allServices.filter(
+              (s) => s.data.category === cat.key && !s.data.featured
+            );
+            if (catServices.length === 0) return null;
+            return (
+              <section class="services-section mb-10">
+                <h2 class="services-section-title">
+                  <span>{cat.emoji}</span> {cat.label}
+                  <span class="services-count">{catServices.length}</span>
+                </h2>
+                <div class="services-grid">
+                  {catServices.map((service) => (
+                    <ServiceCard
+                      name={service.data.name}
+                      description={service.data.description}
+                      url={service.data.url}
+                      icon={service.data.icon}
+                      category={service.data.category}
+                      status={service.data.status}
+                      featured={service.data.featured}
+                      tags={service.data.tags}
+                      showStatusIndicator={showStatus}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+
+      <div class="add-service-tip mt-12 p-4 rounded-lg text-xs opacity-40 text-center">
+        💡 在 <code>src/content/services/</code> 目录中添加 .md 文件即可注册新服务
+      </div>
+    </div>
+
+    <!-- 密码验证脚本（在 MainLayout 内部，确保正常执行） -->
+    {hasPasswordProtection && (
+      <script is:inline define:vars={{ passwordHash, storageKey: "svc_unlocked_v1" }}>
+        const STORAGE_KEY = storageKey;
+        const CORRECT_HASH = passwordHash;
+
+        async function sha256(str) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        function unlock() {
+          const content = document.getElementById("services-content");
+          const gate = document.getElementById("password-gate");
+          if (content) { content.style.display = ""; }
+          if (gate) { gate.style.display = "none"; }
+          sessionStorage.setItem(STORAGE_KEY, "1");
+        }
+
+        function init() {
+          if (sessionStorage.getItem(STORAGE_KEY) === "1") {
+            unlock();
+            return;
+          }
+          const input = document.getElementById("password-input");
+          const submitBtn = document.getElementById("password-submit");
+          const errorEl = document.getElementById("password-error");
+          const wrap = document.getElementById("gate-input-wrap");
+
+          async function doVerify() {
+            const val = input.value.trim();
+            if (!val) return;
+            submitBtn.textContent = "验证中…";
+            submitBtn.disabled = true;
+            errorEl.textContent = "";
+            try {
+              const hash = await sha256(val);
+              if (hash === CORRECT_HASH) {
+                unlock();
+              } else {
+                errorEl.textContent = "密码错误，请重试";
+                input.value = "";
+                input.focus();
+                wrap.style.transform = "translateX(0)";
+                let count = 0;
+                const shakeInterval = setInterval(() => {
+                  wrap.style.transform = count % 2 === 0 ? "translateX(-5px)" : "translateX(5px)";
+                  count++;
+                  if (count > 6) { clearInterval(shakeInterval); wrap.style.transform = "translateX(0)"; }
+                }, 70);
+              }
+            } catch (e) {
+              errorEl.textContent = "验证失败，请刷新重试";
+            } finally {
+              submitBtn.textContent = "解锁";
+              submitBtn.disabled = false;
+            }
+          }
+
+          submitBtn.addEventListener("click", doVerify);
+          input.addEventListener("keydown", (e) => { if (e.key === "Enter") doVerify(); });
+          input.addEventListener("focus", () => { wrap.style.borderColor = "rgba(128,128,128,0.5)"; });
+          input.addEventListener("blur", () => { wrap.style.borderColor = "rgba(128,128,128,0.25)"; });
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      </script>
+    )}
+  </div>
+</MainLayout>
+
+<style>
+  .services-header {
+    padding-top: 2rem;
+  }
+  .services-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    letter-spacing: 0.01em;
+  }
+  .services-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.35rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    opacity: 0.7;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .add-service-tip code {
+    font-family: monospace;
+    padding: 0.1em 0.3em;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    border-radius: 3px;
+  }
+  @media (max-width: 640px) {
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
