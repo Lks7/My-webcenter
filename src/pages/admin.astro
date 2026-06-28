@@ -1,0 +1,17 @@
+---
+// 访问 /admin 自动跳转到 Keystatic 后台 /keystatic
+export const prerender = true;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0;url=/keystatic" />
+  <script>window.location.href = '/keystatic'</script>
+  <title>跳转中...</title>
+</head>
+<body>
+  <p>正在跳转到后台，如果未自动跳转请 <a href="/keystatic">点击这里</a>。</p>
+</body>
+</html>

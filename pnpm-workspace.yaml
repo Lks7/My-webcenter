@@ -1,8 +1,10 @@
 allowBuilds:
-  '@tailwindcss/oxide': true
+  '@parcel/watcher': true
   esbuild: true
   sharp: true
-  swup: true
+
+overrides:
+  vite: ^7.0.0
 
 packages:
   - '.'

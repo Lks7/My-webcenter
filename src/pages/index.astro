@@ -1,239 +1,27 @@
 ---
-import { getCollection } from "astro:content";
-import MainLayout from "../layouts/MainLayout.astro";
-import siteConfig from "../site.config";
-import { sortItemsByDateDesc, withBase } from "../utils/helpers";
-import PostCardPreview from "../components/PostCardPreview.astro";
-import ServiceCard from "../components/ServiceCard.astro";
-import Button from "../components/Button.astro";
-import { Image } from "astro:assets";
-import heroImage from "../assets/images/pixeltrue-space-discovery.svg";
-import ArrowRight from "../icons/ArrowRight.astro";
-import { createHash } from "node:crypto";
-
-const allPosts = (await getCollection("blogs")).sort(sortItemsByDateDesc);
-
-// 获取服务数据
-const allServices = (await getCollection("services")).sort(
-  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
-);
-const featuredServices = allServices.filter(s => s.data.featured);
-const displayServices = featuredServices.length > 0 ? featuredServices : allServices.slice(0, 4);
-
-// 密码保护逻辑
-const rawPassword = siteConfig.services?.password ?? "";
-const passwordHash = rawPassword
-  ? createHash("sha256").update(rawPassword).digest("hex")
-  : "";
-const hasPasswordProtection = passwordHash !== "";
-const showStatus = siteConfig.services?.showStatusIndicator ?? true;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Cards from "../components/Cards.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import {pageTag, pageDescription,homeTdk} from '../data/content';
 ---
 
-<MainLayout
-  activePage="home"
-  pageTitle={siteConfig.title + " | 个人主页"}
-  wide={true}
-  showSubscribeForm={false}
+<BaseLayout
+title={homeTdk.title  || ''}
+description ={homeTdk.description  || ''}
+keywords = {homeTdk.keywords  || ''}
 >
-  <!-- Hero 区域（全宽） -->
-  <div style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin:2.5rem 0;gap:1.5rem;flex-wrap:wrap;">
-    <div style="flex:1;min-width:280px;max-width:55%;">
-      {
-        siteConfig.hero?.eyebrowText && (
-          <span class="tag rounded-full text-xs px-2 py-0 border border-gray-500 kanit-light">
-            {siteConfig.hero?.eyebrowText}
-          </span>
-        )
-      }
-      <h1 class="sigmar-ff leading-tight" style="padding-top:0.5rem;">
-        {siteConfig.hero?.title}
-      </h1>
-      <p class="kanit-regular text-xs sm:text-base" style="opacity:0.8;margin-bottom:0;">
-        {siteConfig.hero?.text}
-      </p>
-      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.5rem;">
-        {
-          siteConfig.hero?.actions?.map((action, index) => (
-            <Button
-              href={action.href}
-              class={index === 0 ? "space-btn-filled" : "space-btn-outlined"}
-            >
-              {action.text}
-            </Button>
-          ))
-        }
-      </div>
-    </div>
-    <div style="flex-shrink:0;">
-      <Image
-        class="cover-img"
-        src={heroImage}
-        alt={"宇航员在宇宙中探索"}
-        width={300}
-        height={230}
-      />
-    </div>
-  </div>
+	<div class="section hero">
+		<div class="container">
+			<SectionHeader
+				tag={pageTag.index}
+				description={pageDescription.index}>
+    			设计&编程
+			</SectionHeader>
+			<Cards />
+		</div>
+	</div>
 
-  <!-- 近期文章区（全宽） -->
-  <div style="width:100%;padding-bottom:4rem;">
-    <!-- 栏标题 -->
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(128,128,128,0.2);">
-      <h2 class="sigmar-ff" style="font-size:1.2rem;padding:0;margin:0;">近期文章</h2>
-      <a href={withBase("/blog")} style="font-size:0.8rem;opacity:0.55;display:flex;align-items:center;gap:0.25rem;white-space:nowrap;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.55">
-        全部文章 <ArrowRight class="w-4 h-4 fill-current" />
-      </a>
-    </div>
-    <!-- 文章列表 -->
-    <div style="display:flex;flex-direction:column;gap:1.5rem;">
-      {
-        allPosts
-          .slice(0, siteConfig.recentPostLimit)
-          .map((post) => <PostCardPreview post={post} />)
-      }
-      {
-        allPosts.length === 0 && (
-          <div style="text-align:center;padding:3rem 1rem;opacity:0.4;grid-column:1/-1;">
-            <div style="font-size:2rem;">✍️</div>
-            <p style="font-size:0.875rem;margin-top:0.5rem;">暂无文章，开始写第一篇吧</p>
-          </div>
-        )
-      }
-    </div>
-  </div>
+</BaseLayout>
 
-  <!-- 服务中心区（全宽） -->
-  <div style="width:100%;padding-bottom:4rem;">
-    <!-- 栏标题 -->
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(128,128,128,0.2);">
-      <h2 class="sigmar-ff" style="font-size:1.2rem;padding:0;margin:0;">服务中心</h2>
-      <a href={withBase("/services")} style="font-size:0.8rem;opacity:0.55;display:flex;align-items:center;gap:0.25rem;white-space:nowrap;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.55">
-        全部服务 <ArrowRight class="w-4 h-4 fill-current" />
-      </a>
-    </div>
 
-    <!-- 密码保护锁 -->
-    {hasPasswordProtection && (
-      <div id="home-password-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;background:rgba(128,128,128,0.02);border-radius:1rem;border:1px dashed rgba(128,128,128,0.2);text-align:center;">
-        <div style="font-size:2rem;margin-bottom:0.5rem;">🔐</div>
-        <h3 style="font-size:1rem;margin:0 0 0.5rem;">服务区已加密</h3>
-        <p style="font-size:0.8rem;opacity:0.6;margin:0 0 1rem;">请输入密码以查看服务卡片</p>
-        <div style="display:flex;border-radius:0.5rem;overflow:hidden;border:1px solid rgba(128,128,128,0.25);background:rgba(128,128,128,0.05);max-width:300px;margin:0 auto;width:100%;" id="home-gate-input-wrap">
-          <input
-            id="home-password-input"
-            type="password"
-            placeholder="输入密码解锁"
-            style="flex:1;padding:0.6rem 0.8rem;background:transparent;border:none;outline:none;font-size:0.85rem;color:inherit;min-width:0;"
-          />
-          <button
-            id="home-password-submit"
-            type="button"
-            style="padding:0.6rem 1.2rem;font-size:0.85rem;font-weight:600;background:rgba(128,128,128,0.15);border:none;border-left:1px solid rgba(128,128,128,0.2);cursor:pointer;transition:background 0.15s;white-space:nowrap;"
-            onmouseover="if(!this.disabled)this.style.background='rgba(128,128,128,0.28)'"
-            onmouseout="if(!this.disabled)this.style.background='rgba(128,128,128,0.15)'"
-          >
-            解锁
-          </button>
-        </div>
-        <p id="home-password-error" style="color:#ef4444;font-size:0.75rem;margin-top:0.5rem;min-height:1.2em;"></p>
-      </div>
-    )}
 
-    <!-- 服务列表 -->
-    <div id="home-services-content" style={hasPasswordProtection ? "display:none;" : ""}>
-      {displayServices.length === 0 ? (
-        <div style="text-align:center;padding:2rem 1rem;opacity:0.4;">
-          <p style="font-size:0.875rem;">暂无服务展示</p>
-        </div>
-      ) : (
-        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));gap:1rem;">
-          {displayServices.map((service) => (
-            <ServiceCard
-              name={service.data.name}
-              description={service.data.description}
-              url={service.data.url}
-              icon={service.data.icon}
-              category={service.data.category}
-              status={service.data.status}
-              featured={service.data.featured}
-              tags={service.data.tags}
-              showStatusIndicator={showStatus}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-    
-    <!-- 密码验证脚本 -->
-    {hasPasswordProtection && (
-      <script is:inline define:vars={{ passwordHash, storageKey: "svc_unlocked_v1" }}>
-        const STORAGE_KEY = storageKey;
-        const CORRECT_HASH = passwordHash;
-        
-        async function sha256(str) {
-          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-        }
-        
-        function unlockHome() {
-          const content = document.getElementById("home-services-content");
-          const gate = document.getElementById("home-password-gate");
-          if (content) content.style.display = "";
-          if (gate) gate.style.display = "none";
-          sessionStorage.setItem(STORAGE_KEY, "1");
-        }
-        
-        function initHome() {
-          if (sessionStorage.getItem(STORAGE_KEY) === "1") {
-            unlockHome();
-            return;
-          }
-          const input = document.getElementById("home-password-input");
-          const submitBtn = document.getElementById("home-password-submit");
-          const errorEl = document.getElementById("home-password-error");
-          const wrap = document.getElementById("home-gate-input-wrap");
-          if (!input || !submitBtn) return;
-          
-          async function doVerify() {
-            const val = input.value.trim();
-            if (!val) return;
-            submitBtn.textContent = "验证…";
-            submitBtn.disabled = true;
-            errorEl.textContent = "";
-            try {
-              const hash = await sha256(val);
-              if (hash === CORRECT_HASH) {
-                unlockHome();
-              } else {
-                errorEl.textContent = "密码错误，请重试";
-                input.value = "";
-                input.focus();
-                wrap.style.transform = "translateX(0)";
-                let count = 0;
-                const shakeInterval = setInterval(() => {
-                  wrap.style.transform = count % 2 === 0 ? "translateX(-5px)" : "translateX(5px)";
-                  count++;
-                  if (count > 6) { clearInterval(shakeInterval); wrap.style.transform = "translateX(0)"; }
-                }, 70);
-              }
-            } catch(e) {
-              errorEl.textContent = "验证失败";
-            } finally {
-              submitBtn.textContent = "解锁";
-              submitBtn.disabled = false;
-            }
-          }
-          
-          submitBtn.addEventListener("click", doVerify);
-          input.addEventListener("keydown", e => { if(e.key === "Enter") doVerify(); });
-        }
-        
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", initHome);
-        } else {
-          initHome();
-        }
-      </script>
-    )}
-  </div>
-</MainLayout>

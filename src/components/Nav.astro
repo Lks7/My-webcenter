@@ -1,72 +1,269 @@
 ---
-import siteConfig, { type Link } from "../site.config";
-import Hamburger from "./Hamburger.astro";
-import ThemeSwitcher from "./ThemeSwitcher.astro";
-import SiteIdentity from "./SiteIdentity.astro";
-import NavLinks from "./NavLinks.astro";
-import { withBase } from "../utils/helpers";
-const { activePage } = Astro.props;
+// import Icon, { Props as IconProps } from './Icon.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import Effect from "../effects/Effect.astro";
+import {nav} from '../data/content';
+import EffectSwitch from "../effects/EffectSwitch.astro";
+import NavMobile from "../components/NavMobile.astro";
+import GitHubStars from './GitHubStars.astro';
 ---
 
-<header>
-  <nav class="font-light w-full">
-    <a href={withBase("/")}><SiteIdentity /></a>
-    <div class="hidden sm:flex sm:gap-8">
-      {(<NavLinks activePage={activePage} links={siteConfig.headerNavLinks} />)}
-    </div>
-    <ThemeSwitcher />
-    <Hamburger />
-  </nav>
-  <div
-    id="mobile-links"
-    class="font-light animated h-0 m-0 opacity-0 top-0 w-full"
-  >
-    <span class="close-menu">❌</span>
-    <NavLinks
-      activePage={activePage}
-      links={siteConfig.headerNavLinks}
-      isMobileLink={true}
-    />
-  </div>
-</header>
-<script is:inline>
-  document.querySelector("#hamburger-menu").addEventListener("click", () => {
-    console.log("clicked...");
-    document.querySelector("#mobile-links").classList.remove("slideOutUp");
-    document.querySelector("#mobile-links").classList.add("expanded");
-    document.querySelector("#mobile-links").classList.add("slideInDown");
-  });
+<nav>
+	<div class="container nav-wrapper">
+		<div class="menu-header">
+			<div class="site-title">
+				<a href="/" class="author">
+					<figure class="avatar">
+						<img class="avatar__img"
+							src={nav.avatar} alt=""
+							draggable="false">
+					</figure>
+				</a>
+				<EffectSwitch  transition:persist/>
+			</div>
+		</div>
+		<div id="menu-content">
+			<div class="menu-footer pc-nav">
+				<ul class="nav-items">
+					{nav.items?.map(item => (
+						<li>
+							<a
+							 	aria-current={Astro.url.pathname === item.href ? 'page' : undefined}
+								 class:list={[
+									'link',
+									{
+										active: Astro.url.pathname === item.href ||
+											(item.href !== '/' && Astro.url.pathname.startsWith(item.href)),
+									},
+								]}
+								href={item.href}
+								target={item.target || '_self'}
+							>
+								{item.label}
+							</a>
+						</li>
+    				))}
+					<li>
+						<GitHubStars />
+					</li>
+				</ul>
 
-  document.querySelector(".close-menu").addEventListener("click", () => {
-    console.log("clicked...");
-    document.querySelector("#mobile-links").classList.add("slideOutUp");
-    document.querySelector("#mobile-links").classList.add("expanded");
-    document.querySelector("#mobile-links").classList.remove("slideInDown");
-  });
+				<div class="theme-toggle" style="transform:scale(0.75)">
+					<ThemeToggle />
+				</div>
+			</div>
+			<NavMobile/>
+		</div>
+	</div>
+</nav>
+<Effect transition:persist/>
+<script>
+	class MenuButton extends HTMLElement {
+		constructor() {
+			super();
+
+			// Inject menu toggle button when JS runs.
+			this.appendChild(this.querySelector('template')!.content.cloneNode(true));
+			const btn = this.querySelector('button')!;
+
+			// Hide menu (shown by default to support no-JS browsers).
+			const menu = document.getElementById('menu-content')!;
+			menu.hidden = true;
+
+			/** Set whether the menu is currently expanded or collapsed. */
+			const setExpanded = (expand: boolean) => {
+				btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+				menu.hidden = !expand;
+			};
+
+			// Toggle menu visibility when the menu button is clicked.
+			btn.addEventListener('click', () => setExpanded(menu.hidden));
+
+			// Hide menu button for large screens.
+			const handleViewports = (e: MediaQueryList | MediaQueryListEvent) => {
+				setExpanded(e.matches);
+				btn.hidden = e.matches;
+			};
+			const mediaQueries = window.matchMedia('(min-width: 50em)');
+			handleViewports(mediaQueries);
+			mediaQueries.addEventListener('change', handleViewports);
+		}
+	}
+	customElements.define('menu-button', MenuButton);
 </script>
 
 <style>
-  @media (orientation: portrait) {
-    #mobile-links.expanded {
-      align-items: end;
-      background-color: #0000007a;
-      backdrop-filter: blur(72px);
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      justify-content: end;
-      position: absolute;
-      z-index: 10;
-      opacity: 1;
-      padding: 1rem 2rem;
-      width: 100vw;
-      top: 0;
-      min-height: fit-content;
-      border-bottom-left-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
+
+	nav {
+		z-index: 9999;
+		position: relative;
+		font-family: var(--font-brand);
+		font-weight: 500;
+		position: sticky;
+		top: 0;
+		-webkit-backdrop-filter: saturate(300%) blur(5px);
+		backdrop-filter: saturate(300%) blur(5px);
+		background-color: rgba(var(--color-999-rgb), 0.65);
+	}
+	.bg-ticker{
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		top: -50px;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+	}
+	.menu-header {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0;
+	}
+
+	.site-title {
+		display: flex;
+		gap: 0.5rem;
+		justify-content: flex-start;
+		align-items: center;
+		line-height: 1.1;
+		color: var(--color-0);
+		font-weight: 400;
+		text-decoration: none;
+		font-size: 1.5rem;
+		letter-spacing: 0.1px;
+		&:hover{
+			color:rgb(236, 72, 113);
+		}
+	}
+	.logo {
+		max-height: 30px;
+	}
+	.logo path{
+		fill: var(--color-100);
+	}
+    .avatar{
+        display: inline-block;
+        position: relative;
+        line-height: 1;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
     }
-    html.light #mobile-links.expanded {
-      background-color: #ffffff6a;
+	.avatar__img{
+		display: block;
+		border-radius: 50%;
     }
-  }
+	.avatar__name{
+		line-height: normal;
+		font-weight: 400;
+		font-size: 22px;
+    }
+	.nav-wrapper{
+		display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+	}
+	.nav-items {
+		margin: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		font-size:1rem;
+		font-weight: normal;
+		line-height:1;
+		list-style: none;
+		padding: 0;
+		position: relative;
+		border: 0;
+		gap: calc(var(--gap)*1.5);
+	}
+	.nav-items li{
+		margin:0;
+	}
+	:global(.github-stars) {
+		flex: none;
+	}
+	.link {
+		display: inline-block;
+		color: var(--color-300);
+		text-decoration: none;
+	}
+
+	.link.active {
+		color: var(--color-100);
+		font-weight: bold;
+	}
+
+	.menu-footer {
+		--icon-size: var(--text-xl);
+		--icon-padding: 0.5rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: .35rem 0rem;
+	}
+
+	.socials {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.625rem;
+		font-size: var(--icon-size);
+	}
+
+	.social {
+		display: flex;
+		padding: var(--icon-padding);
+		text-decoration: none;
+		color: var(--accent-dark);
+		transition: color var(--theme-transition);
+	}
+
+	.social:hover,
+	.social:focus {
+		color: var(--accent-text-over);
+	}
+
+	.theme-toggle {
+		display: flex;
+		align-items: center;
+		height: calc(var(--icon-size) + 2 * var(--icon-padding));
+	}
+	.languages {
+		display: flex;
+		align-items: center;
+		height: calc(var(--icon-size) + 2 * var(--icon-padding));
+	}
+
+	@media (min-width: 60em) {
+		.socials {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0;
+		}
+	}
+	@media (max-width: 576px) {
+		.nav-wrapper{
+			display: flex;
+			align-items: center;
+			gap: 0rem;
+
+		}
+		.menu-header{
+			padding:8px 0;
+		}
+		.menu-footer{
+			padding: 0;
+		}
+	}
+	.pc-nav{
+ 	 	display: none;
+	}
+	@media (min-width: 767px) {
+		.pc-nav{
+			display: flex;
+		}
+	}
 </style>

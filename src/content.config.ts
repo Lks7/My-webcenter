@@ -12,10 +12,11 @@ const blogsCollection = defineCollection({
         tags: z.array(z.string()).optional(),
         draft: z.boolean().optional(),
         image: z.object({
-            url: image(),
+            url: image().optional(),
             alt: z.string().optional()
         })
-            .optional(),
+            .optional()
+            .nullable(),
     }),
 });
 

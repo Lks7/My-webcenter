@@ -37,11 +37,7 @@ export default config({
           label: '作者',
         }),
         tags: fields.array(
-          fields.text({ label: '标签值' }),
-          {
-            label: '标签',
-            itemLabel: (props) => props.fields.value.value || '未命名标签',
-          }
+          fields.text({ label: '标签' })
         ),
         draft: fields.checkbox({
           label: '存为草稿（草稿不在博客列表显示）',
@@ -124,11 +120,7 @@ export default config({
           defaultValue: false,
         }),
         tags: fields.array(
-          fields.text({ label: '标签值' }),
-          {
-            label: '标签',
-            itemLabel: (props) => props.fields.value.value || '未命名标签',
-          }
+          fields.text({ label: '标签' })
         ),
         order: fields.integer({
           label: '排序权重（数字越小越靠前，默认 99）',

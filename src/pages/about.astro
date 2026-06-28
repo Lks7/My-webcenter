@@ -1,24 +1,81 @@
 ---
-import { Image } from "astro:assets";
-import MainLayout from "../layouts/MainLayout.astro";
-import siteConfig from "../site.config";
-import coverImage from "../assets/images/1.png";
+import { Image } from 'astro:assets';
+import BlogPostLayout from "../layouts/BlogPostLayout.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import CallToAction from "../components/CallToAction.astro";
+import {pageTag, pageDescription,aboutTdk} from '../data/content';
+import myPortrait from "../assets/portrait.jpg";
 ---
+<BlogPostLayout
+	title={aboutTdk.title || ''}
+	description = {aboutTdk.description || ''}
+	keywords = {aboutTdk.keywords || ''}
+>
 
-<MainLayout activePage="about" pageTitle={siteConfig.title + " | About"}>
-  <div class="page-content">
-    <h1 class="sigmar-ff text-balance">{siteConfig.about?.title}</h1>
-    <Image
-      width={1024}
-      height={600}
-      loading="eager"
-      layout="constrained"
-      class="rounded-4xl mb-8 mx-auto"
-      src={coverImage}
-      alt="An Astronaut walking on a terrain"
-    />
-    <p class="kanit-light text-left">
-      {siteConfig.about?.text}
-    </p>
-  </div>
-</MainLayout>
+	<div class="post">
+		<main class="post-wrapper about">
+			<SectionHeader
+				tag={pageTag.about}
+				description={pageDescription.about}>
+				 关于我
+			</SectionHeader>
+			<section class="border-top" style="padding-top: 2rem;">
+				<div class="content">
+					<div>
+						<Image src={myPortrait} alt="portrait" width="88" height="88" class="portrait">
+					</div>
+					<p>
+						我是 <strong style="font-size:1.2em">breeze</strong>，一名开发者，专注于 Web 技术与创意实现。
+					</p>
+					<p>
+						喜欢探索有趣的技术，把想法变成现实。
+					</p>
+
+				</div>
+			</section>
+			<section>
+				<h3 class="post-title">工作之外</h3>
+				<div class="content">
+					<p>
+						除了工作之外，我喜欢探索各种技术可能性，做有趣的项目，把想法变成现实。
+					</p>
+					<p>或者，有空我可以请你喝上一杯我自己的调配的咖啡...</p>
+					<p style="margin-top:24px;">
+						<CallToAction
+						target="_self"
+						href="mailto:hello@uiineed.com"
+						>
+							联系我
+						</CallToAction>
+					</p>
+				</div>
+			</section>
+			<p></p>
+			<p></p>
+		</main>
+	</div>
+</BlogPostLayout>
+
+<style>
+	.about {
+		display: flex;
+		flex-direction: column;
+		margin:0 auto;
+	}
+	p{
+		margin:0.75rem 0;
+	}
+	figure{
+		margin:2rem 0;
+	}
+	img{max-width: 100%;}
+	.portrait{
+		border-radius: 100px;
+		margin:12px 0 12px;
+		overflow: hidden;
+		text-align: left;
+	}
+	a, a:link{
+		color:var(--color-blue);
+	}
+</style>

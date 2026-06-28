@@ -77,8 +77,8 @@ export type SiteConfig = {
 
 const siteConfig: SiteConfig = {
     website: 'https://example.com',  // TODO: 替换为你的域名
-    title: '个人主页',
-    description: '个人网站中心 — 博客、工具与服务的聚合门户',
+    title: 'breeze 的个人空间',
+    description: 'breeze 的个人网站 — 博客、项目与创意的聚合地',
     image: {
         src: '/space-ahead-preview.jpeg',
         alt: '个人主页预览'
@@ -138,12 +138,12 @@ const siteConfig: SiteConfig = {
         }
     ],
     hero: {
-        eyebrowText: '个人网站中心',
-        title: '你好，世界 👋',
-        text: "这是我的个人主页，汇聚了博客文章、自部署服务与个人项目。欢迎探索！",
+        eyebrowText: 'breeze 的空间',
+        title: '你好，我是 breeze 👋',
+        text: "欢迎来到我的个人空间，这里汇聚了我的博客文章、项目作品和创意探索。",
         image: {
             src: '/assets/images/pixeltrue-space-discovery.svg',
-            alt: '宇航员在宇宙中探索'
+            alt: '探索中'
         },
         actions: [
             {
@@ -151,14 +151,14 @@ const siteConfig: SiteConfig = {
                 href: withBase('/blog')
             },
             {
-                text: '服务中心',
-                href: withBase('/services')
+                text: '查看项目',
+                href: withBase('/project')
             }
         ]
     },
     about: {
         title: '关于我',
-        text: '欢迎来到我的个人主页。这里是我记录想法、分享经验、聚合自部署服务的地方。',
+        text: '开发者，专注于 Web 技术与创意实现。',
     },
     services: {
         title: '服务中心',
